@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <title>Andrew's PT Report Summarizer</title>
+    <meta name="author" content="Jason Wall" />
+  </head>
+
+  <body>
+    <textarea id="csv" style="width: 100%; height: 500px"></textarea>
+    <input type="button" id="summarize" value="Summarize" onclick="summarize()" />
+    <br />
+    <div id="result"></div>
+    <script>
+      const nameRemove = new Map([
+        ['', 0],
+        ['Discharge Summary (PT)', 0],
+        ['Discharge Summary (OT)', 0],
+        ['Discharge Summary', 0],
+        ['Discharge Summary (ST)', 0],
+        ['Case Conference and 60 Day Summary', 0],
+        ['Aide Care Plan', 0],
+        ['OASIS-D1 Discharge (Non-Billable)', 0],
+        ['OASIS-D1 Discharge (Non-Billable) - OT', 0],
+        ['OASIS-D1 Discharge (Non-Billable) - ST', 0],
+        ['OASIS-D1 Discharge (Non-Billable) - PT', 0],
+        ['OASIS-D1 Transfer', 0],
+        ['OASIS-D1 Transfer (PT)', 0],
+        ['OASIS-D1 Transfer (OT)', 0],
+        ['OASIS-D1 Transfer (ST)', 0],
+      ]);
+
+      const statusRemove = new Map([['Missed Visit (Approved) (MV)', 0]]);
+      const groupBy = function (xs, key) {
+        return xs.reduce(function (rv, x) {
+          if (!rv.has(x[key])) {
+            rv.set(x[key], []);
+          }
+          rv.get(x[key]).push(x);
+
+          return rv;
+        }, new Map());
+      };
+
+      const summarize = function () {
+        let summary = new Map();
+        let data = [];
+
+        let csv = document.getElementById('csv');
+        let lines = csv.value.split('\n');
+        for (let line of lines) {
+          if (line == undefined || line.trim().length === 0 || line.indexOf('Task Type') > -1) {
+            continue;
+          }
+          const fields = line.split('\t');
+          const item = {
+            date: fields[0],
+            name: fields[1],
+            type: fields[2],
+            status: fields[3],
+          };
+
+          if (nameRemove.has(item.name) || statusRemove.has(item.status)) {
+            continue;
+          }
+
+          data.push(item);
+        }
+
+        const groups = groupBy(data, 'type');
+
+        for (let key of groups.keys()) {
+          console.log(key);
+        }
+
+        groups.forEach(function (value, key) {
+          if (key == 'OT') {
+            const cota = value.filter((o) => o.name == 'COTA Visit').length;
+            document.getElementById('result').innerHTML += `${key}: ${value.length - cota}<br />`;
+            document.getElementById('result').innerHTML += `COTA: ${cota}<br />`;
+            return;
+          }
+
+          if (key == 'PT') {
+            const pta = value.filter((o) => o.TaskName == 'PTA Visit').length;
+            document.getElementById('result').innerHTML += `${key}: ${value.length - pta}<br />`;
+            document.getElementById('result').innerHTML += `PTA: ${pta}<br />`;
+            return;
+          }
+
+          if (key == 'SN') {
+            const lpn = value.filter((o) => o.TaskName == 'LPN/LVN - Skilled Nursing Visit').length;
+            document.getElementById('result').innerHTML += `${key}: ${value.length - lpn}<br />`;
+            document.getElementById('result').innerHTML += `LPN: ${lpn}<br />`;
+            return;
+          }
+
+          document.getElementById('result').innerHTML += `${key}: ${value.length}<br />`;
+        });
+      };
+    </script>
+  </body>
+</html>
