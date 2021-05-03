@@ -84,14 +84,14 @@
           }
 
           if (key == 'PT') {
-            const pta = value.filter((o) => o.TaskName == 'PTA Visit').length;
+            const pta = value.filter((o) => o.name == 'PTA Visit').length;
             document.getElementById('result').innerHTML += `${key}: ${value.length - pta}<br />`;
             document.getElementById('result').innerHTML += `PTA: ${pta}<br />`;
             return;
           }
 
           if (key == 'SN') {
-            const lpn = value.filter((o) => o.TaskName == 'LPN/LVN - Skilled Nursing Visit').length;
+            const lpn = value.filter((o) => o.name == 'LPN/LVN - Skilled Nursing Visit').length;
             document.getElementById('result').innerHTML += `${key}: ${value.length - lpn}<br />`;
             document.getElementById('result').innerHTML += `LPN: ${lpn}<br />`;
             return;
