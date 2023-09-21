@@ -14,22 +14,57 @@
     <br />
     <div id="result"></div>
     <script>
-      const nameRemove = new Map([
-        ['', 0],
-        ['Discharge Summary (PT)', 0],
-        ['Discharge Summary (OT)', 0],
-        ['Discharge Summary', 0],
-        ['Discharge Summary (ST)', 0],
-        ['Case Conference and 60 Day Summary', 0],
-        ['Aide Care Plan', 0],
-        ['OASIS-D1 Discharge (Non-Billable)', 0],
-        ['OASIS-D1 Discharge (Non-Billable) - OT', 0],
-        ['OASIS-D1 Discharge (Non-Billable) - ST', 0],
-        ['OASIS-D1 Discharge (Non-Billable) - PT', 0],
-        ['OASIS-D1 Transfer', 0],
-        ['OASIS-D1 Transfer (PT)', 0],
-        ['OASIS-D1 Transfer (OT)', 0],
-        ['OASIS-D1 Transfer (ST)', 0],
+      const nameWhitelist = new Map([
+        // require special handling below.
+        ['COTA Visit', 0],
+        ['PTA Visit', 0],
+        ['LPN/LVN - Skilled Nursing Visit', 0],
+        
+        // are just counted.
+        ['HHA Visit', 0],
+        
+        ['MSW Evaluation', 0],
+        ['MSW Visit', 0],
+        
+        ['OASIS-E Discharge', 0],
+        ['OASIS-E Discharge (OT)', 0],
+        ['OASIS-E Discharge (PT)', 0],
+        ['OASIS-E Discharge (ST)', 0],
+        ['OASIS-E Recertification', 0],
+        ['OASIS-E Recertification (OT)', 0],
+        ['OASIS-E Recertification (PT)', 0],
+        ['OASIS-E Recertification (ST)', 0],
+        ['OASIS-E Resumption of Care', 0],
+        ['OASIS-E Resumption of Care (PT)', 0],
+        ['OASIS-E Start of Care', 0],
+        ['OASIS-E Start of Care (PT)', 0],
+
+        ['OT Visit', 0],
+        ['OT Discharge Eval w/ Discharge Summary', 0],
+        ['OT Evaluation', 0],
+        ['OT Re-Evaluation', 0],
+        ['OT Re-Evaluation w/Supervisory Visit', 0],
+
+        ['PT Discharge w/Discharge Summary', 0],
+        ['PT Evaluation', 0],
+        ['PT Re-Evaluation', 0],
+        ['PT Re-evaluation w/Supervisory Visit ', 0],
+        ['PT Visit', 0],
+        
+        ['RN - Skilled Nursing Visit', 0],
+        
+        ['Skilled Nurse Visit', 0],
+        
+        ['SN Evaluation', 0],
+        ['SN Foley Change', 0],
+        
+        ['SNV W/ Discharge Summary', 0],
+        ['SNV w/ LPN Supervision', 0],
+        
+        ['ST Discharge', 0],
+        ['ST Evaluation', 0],
+        ['ST Re-Evaluation', 0],
+        ['ST Visit', 0],
       ]);
 
       const statusRemove = new Map([['Missed Visit (Approved) (MV)', 0]]);
@@ -50,10 +85,14 @@
 
         let csv = document.getElementById('csv');
         let lines = csv.value.split('\n');
+
+        // read in the csv data.
         for (let line of lines) {
+          // ignore lines that are empty or don't have 'Task Type' in the line somewhere
           if (line == undefined || line.trim().length === 0 || line.indexOf('Task Type') > -1) {
             continue;
           }
+
           const fields = line.split('\t');
           const item = {
             date: fields[0],
@@ -62,7 +101,8 @@
             status: fields[3],
           };
 
-          if (nameRemove.has(item.name) || statusRemove.has(item.status)) {
+          // only accept lines that are in the Whitelist.
+          if (!nameWhitelist.has(item.name) || statusRemove.has(item.status)) {
             continue;
           }
 
