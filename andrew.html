@@ -4,8 +4,16 @@
   <head>
     <meta charset="utf-8" />
 
-    <title>Andrew's PT Report Summarizer v1.1</title>
+    <title>Andrew's PT Report Summarizer v1.2</title>
     <meta name="author" content="Jason Wall" />
+
+    <style>
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+    </style>
   </head>
 
   <body>
@@ -13,19 +21,24 @@
     <input type="button" id="summarize" value="Summarize" onclick="summarize()" />
     <br />
     <div id="result"></div>
+
+    <h2>Used Data</h2>
+    <div id="data"></div>
+    <h2>Ignored Data</h2>
+    <div id="ignoreddata"></div>
     <script>
       const nameWhitelist = new Map([
         // require special handling below.
         ['COTA Visit', 0],
         ['PTA Visit', 0],
         ['LPN/LVN - Skilled Nursing Visit', 0],
-        
+
         // are just counted.
         ['HHA Visit', 0],
-        
+
         ['MSW Evaluation', 0],
         ['MSW Visit', 0],
-        
+
         ['OASIS-E Discharge', 0],
         ['OASIS-E Discharge (OT)', 0],
         ['OASIS-E Discharge (PT)', 0],
@@ -50,17 +63,17 @@
         ['PT Re-Evaluation', 0],
         ['PT Re-evaluation w/Supervisory Visit ', 0],
         ['PT Visit', 0],
-        
+
         ['RN - Skilled Nursing Visit', 0],
-        
+
         ['Skilled Nurse Visit', 0],
-        
+
         ['SN Evaluation', 0],
         ['SN Foley Change', 0],
-        
+
         ['SNV W/ Discharge Summary', 0],
         ['SNV w/ LPN Supervision', 0],
-        
+
         ['ST Discharge', 0],
         ['ST Evaluation', 0],
         ['ST Re-Evaluation', 0],
@@ -79,6 +92,7 @@
         }, new Map());
       };
 
+      document.getElementById('ignoreddata').innerHTML = '';
       const summarize = function () {
         let summary = new Map();
         let data = [];
@@ -88,12 +102,12 @@
 
         // read in the csv data.
         for (let line of lines) {
-          // ignore lines that are empty or don't have 'Task Type' in the line somewhere
+          // ignore lines that are empty or have 'Task Type' in the line somewhere
           if (line == undefined || line.trim().length === 0 || line.indexOf('Task Type') > -1) {
             continue;
           }
 
-          const fields = line.split('\t');
+          const fields = line.split(/\t|,/);
           const item = {
             date: fields[0],
             name: fields[1],
@@ -103,11 +117,19 @@
 
           // only accept lines that are in the Whitelist.
           if (!nameWhitelist.has(item.name) || statusRemove.has(item.status)) {
+            document.getElementById('ignoreddata').innerHTML += line + '<br />';
             continue;
           }
 
           data.push(item);
         }
+
+        let dataHtml = '<table><tr><td>Date</td><td>Name</td><td>Type</td><td>Status</td></tr>';
+        for (const item of data) {
+          dataHtml += `<tr><td>${item.date}</td><td>${item.name}</td><td>${item.type}</td><td>${item.status}</td></tr>`;
+        }
+        dataHtml += '</table>';
+        document.getElementById('data').innerHTML = dataHtml;
 
         const groups = groupBy(data, 'type');
 
@@ -115,6 +137,7 @@
           console.log(key);
         }
 
+        document.getElementById('result').innerHTML = '';
         groups.forEach(function (value, key) {
           if (key == 'OT') {
             const cota = value.filter((o) => o.name == 'COTA Visit').length;
