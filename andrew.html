@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
 
-    <title>Andrew's PT Report Summarizer v1.2</title>
+    <title>Andrew's PT Report Summarizer v1.3</title>
     <meta name="author" content="Jason Wall" />
 
     <style>
@@ -17,6 +17,10 @@
   </head>
 
   <body>
+    <p>
+        Data should be in the form of a tab or comma delimited lines with four fields:<br />
+        Date, Name, Type, Status
+    </p>
     <textarea id="csv" style="width: 100%; height: 350px"></textarea>
     <input type="button" id="summarize" value="Summarize" onclick="summarize()" />
     <br />
