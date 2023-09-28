@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
 
-    <title>Andrew's PT Report Summarizer v1.3</title>
+    <title>Andrew's PT Report Summarizer v1.4</title>
     <meta name="author" content="Jason Wall" />
 
     <style>
@@ -13,78 +13,107 @@
       td {
         border: 1px solid black;
       }
+
+      #input {
+        flex-direction: row;
+      }
+
+      #csv {
+        width: 69%;
+        height: 350px;
+      }
+
+      #whitelist {
+        width: 30%;
+        height: 350px;
+      }
+
+      
+      #wrapper {
+        display: flex;
+        flex-direction: row;
+      }
+
+      #resultdiv, #resultdiv > h2, #result {
+        width: 15%;
+      }
+      #useddatadiv {
+        width: 30%;
+      }
+      #ignoreddatadiv {
+        width: 40%;
+      }
     </style>
   </head>
 
   <body>
     <p>
-        Data should be in the form of a tab or comma delimited lines with four fields:<br />
-        Date, Name, Type, Status
+      Data should be in the form of tab or comma delimited lines with four fields: Date, Name, Type, Status<br />
+      Blank lines and lines with the text "Missed Visit (Approved) (MV)" will be ignored.
     </p>
-    <textarea id="csv" style="width: 100%; height: 350px"></textarea>
+    <div id="input">
+      <textarea id="csv"></textarea>
+      <textarea id="whitelist">
+COTA Visit
+HHA Visit
+LPN/LVN - Skilled Nursing Visit
+MSW Evaluation
+MSW Visit
+OASIS-E Discharge
+OASIS-E Discharge (OT)
+OASIS-E Discharge (PT)
+OASIS-E Discharge (ST)
+OASIS-E Recertification
+OASIS-E Recertification (OT)
+OASIS-E Recertification (PT)
+OASIS-E Recertification (ST)
+OASIS-E Resumption of Care
+OASIS-E Resumption of Care (PT)
+OASIS-E Start of Care
+OASIS-E Start of Care (PT)
+OT Discharge Eval w/ Discharge Summary
+OT Evaluation
+OT Re-Evaluation
+OT Re-Evaluation w/Supervisory Visit
+OT Visit
+PT Discharge w/Discharge Summary
+PT Evaluation
+PT Re-Evaluation
+PT Re-evaluation w/Supervisory Visit 
+PT Visit
+PTA Visit
+RN - Skilled Nursing Visit
+Skilled Nurse Visit
+SN Evaluation
+SN Foley Change
+SNV W/ Discharge Summary
+SNV w/ LPN Supervision
+ST Discharge
+ST Evaluation
+ST Re-Evaluation
+ST Visit
+    </textarea
+      >
+    </div>
     <input type="button" id="summarize" value="Summarize" onclick="summarize()" />
     <br />
-    <h2>Summary</h2>
-    <div id="result"></div>
+    <div id="wrapper">
+      <div id="resultdiv">
+        <h2>Summary</h2>
+        <div id="result"></div>
+      </div>
 
-    <h2>Used Data</h2>
-    <div id="data"></div>
-    <h2>Ignored Data</h2>
-    <div id="ignoreddata"></div>
+      <div id="useddatadiv">
+        <h2>Used Data</h2>
+        <div id="data"></div>
+      </div>
+
+      <div id="ignoreddatadiv">
+        <h2>Ignored Data</h2>
+        <div id="ignoreddata"></div>
+      </div>
+    </div>
     <script>
-      const nameWhitelist = new Map([
-        // require special handling below.
-        ['COTA Visit', 0],
-        ['PTA Visit', 0],
-        ['LPN/LVN - Skilled Nursing Visit', 0],
-
-        // are just counted.
-        ['HHA Visit', 0],
-
-        ['MSW Evaluation', 0],
-        ['MSW Visit', 0],
-
-        ['OASIS-E Discharge', 0],
-        ['OASIS-E Discharge (OT)', 0],
-        ['OASIS-E Discharge (PT)', 0],
-        ['OASIS-E Discharge (ST)', 0],
-        ['OASIS-E Recertification', 0],
-        ['OASIS-E Recertification (OT)', 0],
-        ['OASIS-E Recertification (PT)', 0],
-        ['OASIS-E Recertification (ST)', 0],
-        ['OASIS-E Resumption of Care', 0],
-        ['OASIS-E Resumption of Care (PT)', 0],
-        ['OASIS-E Start of Care', 0],
-        ['OASIS-E Start of Care (PT)', 0],
-
-        ['OT Visit', 0],
-        ['OT Discharge Eval w/ Discharge Summary', 0],
-        ['OT Evaluation', 0],
-        ['OT Re-Evaluation', 0],
-        ['OT Re-Evaluation w/Supervisory Visit', 0],
-
-        ['PT Discharge w/Discharge Summary', 0],
-        ['PT Evaluation', 0],
-        ['PT Re-Evaluation', 0],
-        ['PT Re-evaluation w/Supervisory Visit ', 0],
-        ['PT Visit', 0],
-
-        ['RN - Skilled Nursing Visit', 0],
-
-        ['Skilled Nurse Visit', 0],
-
-        ['SN Evaluation', 0],
-        ['SN Foley Change', 0],
-
-        ['SNV W/ Discharge Summary', 0],
-        ['SNV w/ LPN Supervision', 0],
-
-        ['ST Discharge', 0],
-        ['ST Evaluation', 0],
-        ['ST Re-Evaluation', 0],
-        ['ST Visit', 0],
-      ]);
-
       const statusRemove = new Map([['Missed Visit (Approved) (MV)', 0]]);
       const groupBy = function (xs, key) {
         return xs.reduce(function (rv, x) {
@@ -97,14 +126,22 @@
         }, new Map());
       };
 
-      document.getElementById('ignoreddata').innerHTML = '';
       const summarize = function () {
+        const nameWhitelist = new Map(
+          document
+            .getElementById('whitelist')
+            .value.split('\n')
+            .map((o) => [o.trim(), 0])
+            .filter((o) => o[0].length > 0) // ignore empty lines.
+        );
+
         let summary = new Map();
         let data = [];
 
         let csv = document.getElementById('csv');
         let lines = csv.value.split('\n');
 
+        let ignoredData = '<table id="ignoreddata"><tr><td>Date</td><td>Name</td><td>Type</td><td>Status</td></tr>';
         // read in the csv data.
         for (let line of lines) {
           // ignore lines that are empty or have 'Task Type' in the line somewhere
@@ -122,14 +159,16 @@
 
           // only accept lines that are in the Whitelist.
           if (!nameWhitelist.has(item.name) || statusRemove.has(item.status)) {
-            document.getElementById('ignoreddata').innerHTML += line + '<br />';
+            ignoredData += `<tr><td>${item.date}</td><td>${item.name}</td><td>${item.type}</td><td>${item.status}</td></tr>`;
             continue;
           }
 
           data.push(item);
         }
+        ignoredData += '</table>';
+        document.getElementById('ignoreddata').innerHTML = ignoredData;
 
-        let dataHtml = '<table><tr><td>Date</td><td>Name</td><td>Type</td><td>Status</td></tr>';
+        let dataHtml = '<table id="useddata"><tr><td>Date</td><td>Name</td><td>Type</td><td>Status</td></tr>';
         for (const item of data) {
           dataHtml += `<tr><td>${item.date}</td><td>${item.name}</td><td>${item.type}</td><td>${item.status}</td></tr>`;
         }
@@ -142,31 +181,33 @@
           console.log(key);
         }
 
-        document.getElementById('result').innerHTML = '';
+        let result = '<table id="summaryresult"><tr><td>Type</td><td>Count</td></tr>';
         groups.forEach(function (value, key) {
           if (key == 'OT') {
             const cota = value.filter((o) => o.name == 'COTA Visit').length;
-            document.getElementById('result').innerHTML += `${key}: ${value.length - cota}<br />`;
-            document.getElementById('result').innerHTML += `COTA: ${cota}<br />`;
+            result += `<tr><td>${key}</td><td>${value.length - cota}</td></tr>`;
+            result += `<tr><td>COTA</td><td>${cota}</td></tr>`;
             return;
           }
 
           if (key == 'PT') {
             const pta = value.filter((o) => o.name == 'PTA Visit').length;
-            document.getElementById('result').innerHTML += `${key}: ${value.length - pta}<br />`;
-            document.getElementById('result').innerHTML += `PTA: ${pta}<br />`;
+            result += `<tr><td>${key}</td><td>${value.length - pta}</td></tr>`;
+            result += `<tr><td>PTA</td><td>${pta}</td></tr>`;
             return;
           }
 
           if (key == 'SN') {
             const lpn = value.filter((o) => o.name == 'LPN/LVN - Skilled Nursing Visit').length;
-            document.getElementById('result').innerHTML += `${key}: ${value.length - lpn}<br />`;
-            document.getElementById('result').innerHTML += `LPN: ${lpn}<br />`;
+            result += `<tr><td>${key}</td><td>${value.length - lpn}</td></tr>`;
+            result += `<tr><td>LPN</td><td>${lpn}</td></tr>`;
             return;
           }
 
-          document.getElementById('result').innerHTML += `${key}: ${value.length}<br />`;
+          result += `<tr><td>${key}</td><td>${value.length}</td></tr>`;
         });
+        result += '</table>';
+        document.getElementById('result').innerHTML = result;
       };
     </script>
   </body>
