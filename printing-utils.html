@@ -1,551 +1,548 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Printing & Matting Utilities</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
 
-        header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+      header {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
 
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
+      .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
 
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+      }
+
+      .section {
+        padding: 40px;
+        border-right: 1px solid #eee;
+      }
+
+      .section:last-child {
+        border-right: none;
+      }
+
+      .section-title {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        text-align: center;
+        position: relative;
+      }
+
+      .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #34495e;
+      }
+
+      input[type='number'] {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+
+      input[type='number']:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .input-changed {
+        border-color: #27ae60 !important;
+        background-color: rgba(39, 174, 96, 0.05) !important;
+        box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.15) !important;
+        transition: all 0.3s ease;
+      }
+
+      .input-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .mat-visual {
+        margin: 30px 0;
+        text-align: center;
+      }
+
+      .frame-container {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 20px;
+        background: #d2b48c;
+        position: relative;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .mat {
+        background: #f5f5dc;
+        border: 1px solid #ddd;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .image {
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        border: 1px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .dimensions {
+        margin-top: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+      }
+
+      .dimension-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .dimension-label {
+        font-weight: 600;
+        color: #34495e;
+      }
+
+      .dimension-value {
+        color: #667eea;
+        font-weight: 500;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      }
+
+      .ratio-display {
+        margin: 20px 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      }
+
+      .ratio-examples {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+
+      .ratio-example {
+        margin-bottom: 5px;
+        color: #666;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      }
+
+      .calculate-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .calculate-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .error {
+        color: #e74c3c;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+
+      .success {
+        color: #27ae60;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+
+      @media (max-width: 768px) {
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
+          grid-template-columns: 1fr;
         }
 
         .section {
-            padding: 40px;
-            border-right: 1px solid #eee;
+          border-right: none;
+          border-bottom: 1px solid #eee;
         }
 
         .section:last-child {
-            border-right: none;
-        }
-
-        .section-title {
-            font-size: 1.8rem;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            text-align: center;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 3px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 2px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #34495e;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+          border-bottom: none;
         }
 
         .input-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+          grid-template-columns: 1fr;
         }
 
-        .mat-visual {
-            margin: 30px 0;
-            text-align: center;
+        h1 {
+          font-size: 2rem;
         }
-
-        .frame-container {
-            display: inline-block;
-            border-radius: 4px;
-            padding: 20px;
-            background: #D2B48C;
-            position: relative;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .mat {
-            background: #F5F5DC;
-            border: 1px solid #DDD;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .image {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            border: 1px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        .dimensions {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .dimension-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .dimension-label {
-            font-weight: 600;
-            color: #34495e;
-        }
-
-        .dimension-value {
-            color: #667eea;
-            font-weight: 500;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        }
-
-        .ratio-display {
-            margin: 20px 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: 600;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        }
-
-        .ratio-examples {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .ratio-example {
-            margin-bottom: 5px;
-            color: #666;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        }
-
-        .calculate-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .calculate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .error {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .success {
-            color: #27ae60;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            .section {
-                border-right: none;
-                border-bottom: 1px solid #eee;
-            }
-
-            .section:last-child {
-                border-bottom: none;
-            }
-
-            .input-row {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>Printing & Matting Utilities</h1>
-            <p class="subtitle">Professional tools for framing and ratio calculations</p>
-        </header>
+      <header>
+        <h1>Printing & Matting Utilities</h1>
+        <p class="subtitle">Professional tools for framing and ratio calculations</p>
+      </header>
 
-        <div class="main-content">
-            <!-- Mat Board Calculator Section -->
-            <div class="section">
-                <h2 class="section-title">Mat Board Calculator</h2>
-                
-                <div class="form-group">
-                    <label>Frame Interior Dimensions (inches)</label>
-                    <div class="input-row">
-                        <div>
-                            <input type="number" id="frameWidth" placeholder="Width" step="0.01" value="24">
-                        </div>
-                        <div>
-                            <input type="number" id="frameHeight" placeholder="Height" step="0.01" value="32">
-                        </div>
-                    </div>
-                </div>
+      <div class="main-content">
+        <!-- Mat Board Calculator Section -->
+        <div class="section">
+          <h2 class="section-title">Mat Board Calculator</h2>
 
-                <div class="form-group">
-                    <label>Image Dimensions (inches)</label>
-                    <div class="input-row">
-                        <div>
-                            <input type="number" id="imageWidth" placeholder="Width" step="0.01" value="17">
-                        </div>
-                        <div>
-                            <input type="number" id="imageHeight" placeholder="Height" step="0.01" value="22">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Mat Border Dimensions (inches)</label>
-                    <div class="input-row">
-                        <div>
-                            <input type="number" id="matTop" placeholder="Top" step="0.01">
-                        </div>
-                        <div>
-                            <input type="number" id="matBottom" placeholder="Bottom" step="0.01">
-                        </div>
-                    </div>
-                    <div class="input-row" style="margin-top: 15px;">
-                        <div>
-                            <input type="number" id="matLeft" placeholder="Left" step="0.01">
-                        </div>
-                        <div>
-                            <input type="number" id="matRight" placeholder="Right" step="0.01">
-                        </div>
-                    </div>
-                </div>
-
-                <button class="calculate-btn" onclick="calculateMat()">Calculate Missing Values</button>
-                <div id="matError" class="error" style="display: none;"></div>
-
-                <div class="mat-visual">
-                    <div id="frameVisualization">
-                        <!-- Visual representation will be generated here -->
-                    </div>
-                </div>
-
-                <div class="dimensions" id="matDimensions" style="display: none;">
-                    <div class="dimension-item">
-                        <span class="dimension-label">Frame Interior:</span>
-                        <span class="dimension-value" id="calcFrameDims">-</span>
-                    </div>
-                    <div class="dimension-item">
-                        <span class="dimension-label">Image Size:</span>
-                        <span class="dimension-value" id="calcImageDims">-</span>
-                    </div>
-                    <div class="dimension-item">
-                        <span class="dimension-label">Mat Borders:</span>
-                        <span class="dimension-value" id="calcMatDims">-</span>
-                    </div>
-                </div>
+          <div class="form-group">
+            <label>Frame Interior Dimensions (inches)</label>
+            <div class="input-row">
+              <div>
+                <input type="number" id="frameWidth" placeholder="Width" step="0.01" value="24" />
+              </div>
+              <div>
+                <input type="number" id="frameHeight" placeholder="Height" step="0.01" value="32" />
+              </div>
             </div>
+          </div>
 
-            <!-- Ratio Calculator Section -->
-            <div class="section">
-                <h2 class="section-title">Ratio Calculator</h2>
-                
-                <div class="form-group">
-                    <label>Reference Ratio</label>
-                    <div class="input-row">
-                        <div>
-                            <input type="number" id="ratioX" placeholder="Width ratio" step="0.01">
-                        </div>
-                        <div>
-                            <input type="number" id="ratioY" placeholder="Height ratio" step="0.01">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Target Dimensions</label>
-                    <div class="input-row">
-                        <div>
-                            <input type="number" id="targetX" placeholder="Known width" step="0.125">
-                        </div>
-                        <div>
-                            <input type="number" id="targetY" placeholder="Known height" step="0.125">
-                        </div>
-                    </div>
-                </div>
-
-                <button class="calculate-btn" onclick="calculateRatio()">Calculate Missing Dimension</button>
-                <div id="ratioError" class="error" style="display: none;"></div>
-
-                <div class="ratio-display" id="ratioResult" style="display: none;">
-                    <div id="ratioText">-</div>
-                </div>
-
-                <div class="ratio-examples">
-                    <div style="margin-bottom: 15px;">
-                        <strong>American Photo Dimensions:</strong>
-                        <div class="ratio-example">• 2:3 &nbsp;&nbsp;&nbsp;&nbsp;(35mm film) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 1.50</div>
-                        <div class="ratio-example">• 1:1.461 (13&times;19 - Super B) - 1.46</div>
-                        <div class="ratio-example">• 5:7 &nbsp;&nbsp;&nbsp;&nbsp;(5&times;7 print) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 1.40</div>
-                        <div class="ratio-example">• 3:4 &nbsp;&nbsp;&nbsp;&nbsp;(Traditional) &nbsp;&nbsp;&nbsp;&nbsp;- 1.33</div>
-                        <div class="ratio-example">• 4:5 &nbsp;&nbsp;&nbsp;&nbsp;(8&times;10 print) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 1.25</div>
-                        <div class="ratio-example">• 1:1 &nbsp;&nbsp;&nbsp;&nbsp;(Square format) &nbsp;&nbsp;- 1.00</div>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <strong>Video/Digital:</strong>
-                        <div class="ratio-example">• &nbsp;4:3 (Standard TV/Monitor)</div>
-                        <div class="ratio-example">• 16:9 (HD/4K Widescreen)</div>
-                        <div class="ratio-example">• 21:9 (Ultra-wide)</div>
-                        <div class="ratio-example">• 9:16 (Vertical/Mobile)</div>
-                    </div>
-                    <div>
-                        <strong>A-Series Paper:</strong>
-                        <div class="ratio-example">• 1:1.414 (A0 - 33.1 &times; 46.8" | 841 &times; 1189mm)</div>
-                        <div class="ratio-example">• 1:1.414 (A1 - 23.4 &times; 33.1" | 594 &times; 841mm)</div>
-                        <div class="ratio-example">• 1:1.414 (A2 - 16.5 &times; 23.4" | 420 &times; 594mm)</div>
-                        <div class="ratio-example">• 1:1.414 (A3 - 11.7 &times; 16.5" | 297 &times; 420mm)</div>
-                        <div class="ratio-example">• 1:1.414 (A4 - &nbsp;8.3 &times; 11.7" | 210 &times; 297mm)</div>
-                        <div class="ratio-example">• 1:1.414 (A5 - &nbsp;5.8 &times; 8.3"&nbsp; | 148 &times; 210mm)</div>
-                        <div class="ratio-example">• 1:1.414 (A6 - &nbsp;4.1 &times; 5.8"&nbsp; | 105 &times; 148mm)</div>
-                    </div>
-                </div>
+          <div class="form-group">
+            <label>Image Dimensions (inches)</label>
+            <div class="input-row">
+              <div>
+                <input type="number" id="imageWidth" placeholder="Width" step="0.01" value="17" />
+              </div>
+              <div>
+                <input type="number" id="imageHeight" placeholder="Height" step="0.01" value="22" />
+              </div>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label>Mat Border Dimensions (inches)</label>
+            <div class="input-row">
+              <div>
+                <input type="number" id="matTop" placeholder="Top" step="0.01" />
+              </div>
+              <div>
+                <input type="number" id="matBottom" placeholder="Bottom" step="0.01" />
+              </div>
+            </div>
+            <div class="input-row" style="margin-top: 15px">
+              <div>
+                <input type="number" id="matLeft" placeholder="Left" step="0.01" />
+              </div>
+              <div>
+                <input type="number" id="matRight" placeholder="Right" step="0.01" />
+              </div>
+            </div>
+          </div>
+
+          <button class="calculate-btn" onclick="calculateMat()">Calculate Missing Values</button>
+          <div id="matError" class="error" style="display: none"></div>
+
+          <div class="mat-visual">
+            <div id="frameVisualization">
+              <!-- Visual representation will be generated here -->
+            </div>
+          </div>
+
+          <div class="dimensions" id="matDimensions" style="display: none">
+            <div class="dimension-item">
+              <span class="dimension-label">Frame Interior:</span>
+              <span class="dimension-value" id="calcFrameDims">-</span>
+            </div>
+            <div class="dimension-item">
+              <span class="dimension-label">Image Size:</span>
+              <span class="dimension-value" id="calcImageDims">-</span>
+            </div>
+            <div class="dimension-item">
+              <span class="dimension-label">Mat Borders:</span>
+              <span class="dimension-value" id="calcMatDims">-</span>
+            </div>
+          </div>
         </div>
+
+        <!-- Ratio Calculator Section -->
+        <div class="section">
+          <h2 class="section-title">Ratio Calculator</h2>
+
+          <div class="form-group">
+            <label>Reference Ratio</label>
+            <div class="input-row">
+              <div>
+                <input type="number" id="ratioX" placeholder="Width ratio" step="0.01" />
+              </div>
+              <div>
+                <input type="number" id="ratioY" placeholder="Height ratio" step="0.01" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Target Dimensions</label>
+            <div class="input-row">
+              <div>
+                <input type="number" id="targetX" placeholder="Known width" step="0.125" />
+              </div>
+              <div>
+                <input type="number" id="targetY" placeholder="Known height" step="0.125" />
+              </div>
+            </div>
+          </div>
+
+          <button class="calculate-btn" onclick="calculateRatio()">Calculate Missing Dimension</button>
+          <div id="ratioError" class="error" style="display: none"></div>
+
+          <div class="ratio-display" id="ratioResult" style="display: none">
+            <div id="ratioText">-</div>
+          </div>
+
+          <div class="ratio-examples">
+            <div style="margin-bottom: 15px">
+              <strong>American Photo Dimensions:</strong>
+              <div class="ratio-example">
+                • 2:3 &nbsp;&nbsp;&nbsp;&nbsp;(35mm film) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 1.50
+              </div>
+              <div class="ratio-example">• 1:1.461 (13&times;19 - Super B) - 1.46</div>
+              <div class="ratio-example">
+                • 5:7 &nbsp;&nbsp;&nbsp;&nbsp;(5&times;7 print) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 1.40
+              </div>
+              <div class="ratio-example">
+                • 3:4 &nbsp;&nbsp;&nbsp;&nbsp;(Traditional) &nbsp;&nbsp;&nbsp;&nbsp;- 1.33
+              </div>
+              <div class="ratio-example">
+                • 4:5 &nbsp;&nbsp;&nbsp;&nbsp;(8&times;10 print) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 1.25
+              </div>
+              <div class="ratio-example">• 1:1 &nbsp;&nbsp;&nbsp;&nbsp;(Square format) &nbsp;&nbsp;- 1.00</div>
+            </div>
+            <div style="margin-bottom: 15px">
+              <strong>Video/Digital:</strong>
+              <div class="ratio-example">• &nbsp;4:3 (Standard TV/Monitor)</div>
+              <div class="ratio-example">• 16:9 (HD/4K Widescreen)</div>
+              <div class="ratio-example">• 21:9 (Ultra-wide)</div>
+              <div class="ratio-example">• 9:16 (Vertical/Mobile)</div>
+            </div>
+            <div>
+              <strong>A-Series Paper:</strong>
+              <div class="ratio-example">• 1:1.414 (A0 - 33.1 &times; 46.8" | 841 &times; 1189mm)</div>
+              <div class="ratio-example">• 1:1.414 (A1 - 23.4 &times; 33.1" | 594 &times; 841mm)</div>
+              <div class="ratio-example">• 1:1.414 (A2 - 16.5 &times; 23.4" | 420 &times; 594mm)</div>
+              <div class="ratio-example">• 1:1.414 (A3 - 11.7 &times; 16.5" | 297 &times; 420mm)</div>
+              <div class="ratio-example">• 1:1.414 (A4 - &nbsp;8.3 &times; 11.7" | 210 &times; 297mm)</div>
+              <div class="ratio-example">• 1:1.414 (A5 - &nbsp;5.8 &times; 8.3"&nbsp; | 148 &times; 210mm)</div>
+              <div class="ratio-example">• 1:1.414 (A6 - &nbsp;4.1 &times; 5.8"&nbsp; | 105 &times; 148mm)</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        // Mat Board Calculator Module
-        const MatCalculator = {
-            // Calculate missing values based on what's provided
-            calculate(frameW, frameH, imageW, imageH, matT, matB, matL, matR) {
-                const values = {
-                    frameWidth: frameW,
-                    frameHeight: frameH,
-                    imageWidth: imageW,
-                    imageHeight: imageH,
-                    matTop: matT,
-                    matBottom: matB,
-                    matLeft: matL,
-                    matRight: matR
-                };
+      // Mat Board Calculator Module
+      const MatCalculator = {
+        // Calculate missing values based on what's provided
+        calculate(frameW, frameH, imageW, imageH, matT, matB, matL, matR) {
+          const values = {
+            frameWidth: frameW,
+            frameHeight: frameH,
+            imageWidth: imageW,
+            imageHeight: imageH,
+            matTop: matT,
+            matBottom: matB,
+            matLeft: matL,
+            matRight: matR,
+          };
 
-                // Count how many values we have for each dimension
-                const frameValues = [frameW, frameH].filter(v => v && v > 0).length;
-                const imageValues = [imageW, imageH].filter(v => v && v > 0).length;
-                const matValues = [matT, matB, matL, matR].filter(v => v && v > 0).length;
+          // Count how many values we have for each dimension
+          const frameValues = [frameW, frameH].filter((v) => v && v > 0).length;
+          const imageValues = [imageW, imageH].filter((v) => v && v > 0).length;
+          const matValues = [matT, matB, matL, matR].filter((v) => v && v > 0).length;
 
-                // Validation: we need at least enough information to calculate missing values
-                if (frameValues === 2 && imageValues === 2) {
-                    // Frame + Image provided - can calculate mat (this should work!)
-                    // No additional validation needed
-                } else if (frameValues === 2 && matValues >= 2) {
-                    // Frame + some mat values - can calculate image
-                    if (matValues < 4) {
-                        // Need at least horizontal OR vertical mat pairs
-                        const hasHorizontalMat = (matL && matR) || (!matL && !matR);
-                        const hasVerticalMat = (matT && matB) || (!matT && !matB);
-                        if (!hasHorizontalMat || !hasVerticalMat) {
-                            throw new Error('When providing partial mat values, provide matching pairs (Left+Right, Top+Bottom)');
-                        }
-                    }
-                } else if (imageValues === 2 && matValues >= 2) {
-                    // Image + some mat values - can calculate frame
-                    if (matValues < 4) {
-                        const hasHorizontalMat = (matL && matR) || (!matL && !matR);
-                        const hasVerticalMat = (matT && matB) || (!matT && !matB);
-                        if (!hasHorizontalMat || !hasVerticalMat) {
-                            throw new Error('When providing partial mat values, provide matching pairs (Left+Right, Top+Bottom)');
-                        }
-                    }
-                } else {
-                    throw new Error('Please provide at least: (Frame + Image) OR (Frame + Mat) OR (Image + Mat)');
-                }
+          const shouldCalculateMat = imageValues === 2 && frameValues === 2;
+          const shouldCalculateFrame = imageValues > 0 && matValues === 4;
+          const shouldCalculateImage = frameValues > 0 && matValues === 4;
 
-                // Calculate missing frame dimensions
-                if (frameValues < 2 && imageValues === 2 && matValues >= 2) {
-                    if (!frameW && imageW && matL && matR) {
-                        values.frameWidth = imageW + matL + matR;
-                    }
-                    if (!frameH && imageH && matT && matB) {
-                        values.frameHeight = imageH + matT + matB;
-                    }
-                }
+          // Validation: we need at least enough information to calculate missing values
+          if (!shouldCalculateMat && !shouldCalculateFrame && !shouldCalculateImage) {
+            throw new Error('Please provide at least: (Frame + Image) OR (Frame + Mat) OR (Image + Mat)');
+          }
 
-                // Calculate missing image dimensions
-                if (imageValues < 2 && frameValues === 2 && matValues >= 2) {
-                    if (!imageW && frameW && matL && matR) {
-                        values.imageWidth = frameW - matL - matR;
-                        if (values.imageWidth <= 0) throw new Error('Mat borders are too large for the frame');
-                    }
-                    if (!imageH && frameH && matT && matB) {
-                        values.imageHeight = frameH - matT - matB;
-                        if (values.imageHeight <= 0) throw new Error('Mat borders are too large for the frame');
-                    }
-                }
+          // Calculate missing frame dimensions
+          if (shouldCalculateFrame) {
+            if (!frameW && imageW && matL && matR) {
+              values.frameWidth = imageW + matL + matR;
+            }
+            if (!frameH && imageH && matT && matB) {
+              values.frameHeight = imageH + matT + matB;
+            }
+          }
 
-                // Calculate missing mat dimensions
-                if (matValues < 4 && frameValues === 2 && imageValues === 2) {
-                    const totalHorizontalMat = frameW - imageW;
-                    const totalVerticalMat = frameH - imageH;
-                    
-                    if (totalHorizontalMat < 0 || totalVerticalMat < 0) {
-                        throw new Error('Image is larger than frame interior');
-                    }
-                    
-                    // Handle horizontal mat calculations
-                    if (!matL && !matR) {
-                        // Both missing - split equally
-                        values.matLeft = values.matRight = totalHorizontalMat / 2;
-                    } else if (!matL && matR) {
-                        // Only left missing
-                        values.matLeft = totalHorizontalMat - matR;
-                    } else if (!matR && matL) {
-                        // Only right missing
-                        values.matRight = totalHorizontalMat - matL;
-                    }
-                    
-                    // Handle vertical mat calculations
-                    if (!matT && !matB) {
-                        // Both missing - split equally
-                        values.matTop = values.matBottom = totalVerticalMat / 2;
-                    } else if (!matT && matB) {
-                        // Only top missing
-                        values.matTop = totalVerticalMat - matB;
-                    } else if (!matB && matT) {
-                        // Only bottom missing
-                        values.matBottom = totalVerticalMat - matT;
-                    }
-                    
-                    // Validate calculated mat values are positive
-                    if (values.matLeft < 0 || values.matRight < 0 || values.matTop < 0 || values.matBottom < 0) {
-                        throw new Error('Calculated mat dimensions are negative - check your inputs');
-                    }
-                }
+          // Calculate missing image dimensions
+          if (shouldCalculateImage) {
+            if (!imageW && frameW && matL && matR) {
+              values.imageWidth = frameW - matL - matR;
+              if (values.imageWidth <= 0) throw new Error('Mat borders are too large for the frame');
+            }
+            if (!imageH && frameH && matT && matB) {
+              values.imageHeight = frameH - matT - matB;
+              if (values.imageHeight <= 0) throw new Error('Mat borders are too large for the frame');
+            }
+          }
 
-                // Validate calculations
-                if (values.frameWidth && values.imageWidth && values.matLeft && values.matRight) {
-                    const calculatedFrameW = values.imageWidth + values.matLeft + values.matRight;
-                    if (Math.abs(calculatedFrameW - values.frameWidth) > 0.001) {
-                        throw new Error('Inconsistent width values - please check your inputs');
-                    }
-                }
+          // Calculate missing mat dimensions
+          if (shouldCalculateMat) {
+            const totalHorizontalMat = frameW - imageW;
+            const totalVerticalMat = frameH - imageH;
 
-                if (values.frameHeight && values.imageHeight && values.matTop && values.matBottom) {
-                    const calculatedFrameH = values.imageHeight + values.matTop + values.matBottom;
-                    if (Math.abs(calculatedFrameH - values.frameHeight) > 0.001) {
-                        throw new Error('Inconsistent height values - please check your inputs');
-                    }
-                }
+            if (totalHorizontalMat < 0 || totalVerticalMat < 0) {
+              throw new Error('Image is larger than frame interior');
+            }
 
-                return values;
-            },
+            // Handle horizontal mat calculations
+            if (!matL && !matR) {
+              // Both missing - split equally
+              values.matLeft = values.matRight = totalHorizontalMat / 2;
+            } else if (!matL && matR) {
+              // Only left missing
+              values.matLeft = totalHorizontalMat - matR;
+            } else if (!matR && matL) {
+              // Only right missing
+              values.matRight = totalHorizontalMat - matL;
+            }
 
-            // Generate visual representation
-            generateVisual(frameW, frameH, imageW, imageH, matT, matB, matL, matR) {
-                if (!frameW || !frameH || !imageW || !imageH || !matT || !matB || !matL || !matR) {
-                    return '<div style="color: #666; font-style: italic;">Complete calculation to see visualization</div>';
-                }
+            // Handle vertical mat calculations
+            if (!matT && !matB) {
+              // Both missing - split equally
+              values.matTop = values.matBottom = totalVerticalMat / 2;
+            } else if (!matT && matB) {
+              // Only top missing
+              values.matTop = totalVerticalMat - matB;
+            } else if (!matB && matT) {
+              // Only bottom missing
+              values.matBottom = totalVerticalMat - matT;
+            }
 
-                // Scale for display (max 250px)
-                const maxDisplaySize = 250;
-                const scale = Math.min(maxDisplaySize / frameW, maxDisplaySize / frameH);
-                
-                const displayFrameW = frameW * scale;
-                const displayFrameH = frameH * scale;
-                const displayMatT = matT * scale;
-                const displayMatB = matB * scale;
-                const displayMatL = matL * scale;
-                const displayMatR = matR * scale;
+            // Validate calculated mat values are positive
+            if (values.matLeft < 0 || values.matRight < 0 || values.matTop < 0 || values.matBottom < 0) {
+              throw new Error('Calculated mat dimensions are negative - check your inputs');
+            }
+          }
 
-                return `
+          // Validate calculations
+          if (values.frameWidth && values.imageWidth && values.matLeft && values.matRight) {
+            const calculatedFrameW = values.imageWidth + values.matLeft + values.matRight;
+            if (Math.abs(calculatedFrameW - values.frameWidth) > 0.001) {
+              throw new Error('Inconsistent width values - please check your inputs');
+            }
+          }
+
+          if (values.frameHeight && values.imageHeight && values.matTop && values.matBottom) {
+            const calculatedFrameH = values.imageHeight + values.matTop + values.matBottom;
+            if (Math.abs(calculatedFrameH - values.frameHeight) > 0.001) {
+              throw new Error('Inconsistent height values - please check your inputs');
+            }
+          }
+
+          return values;
+        },
+
+        // Generate visual representation
+        generateVisual(frameW, frameH, imageW, imageH, matT, matB, matL, matR) {
+          if (!frameW || !frameH || !imageW || !imageH || !matT || !matB || !matL || !matR) {
+            return '<div style="color: #666; font-style: italic;">Complete calculation to see visualization</div>';
+          }
+
+          // Scale for display (max 250px)
+          const maxDisplaySize = 250;
+          const scale = Math.min(maxDisplaySize / frameW, maxDisplaySize / frameH);
+
+          const displayFrameW = frameW * scale;
+          const displayFrameH = frameH * scale;
+          const displayMatT = matT * scale;
+          const displayMatB = matB * scale;
+          const displayMatL = matL * scale;
+          const displayMatR = matR * scale;
+
+          return `
                     <div style="position: relative; display: inline-block; margin: 40px;">
                         <!-- Top label -->
                         <div style="
@@ -625,191 +622,378 @@
                         </div>
                     </div>
                 `;
+        },
+      };
+
+      // Ratio Calculator Module
+      const RatioCalculator = {
+        calculate(ratioX, ratioY, targetX, targetY) {
+          if (!ratioX || !ratioY || ratioX <= 0 || ratioY <= 0) {
+            throw new Error('Please provide valid reference ratio values');
+          }
+
+          const providedValues = [targetX, targetY].filter((v) => v && v > 0).length;
+
+          if (providedValues === 0) {
+            throw new Error('Please provide at least one target dimension');
+          }
+
+          if (providedValues === 2) {
+            // Check if provided values match the ratio
+            const actualRatio = targetX / targetY;
+            const expectedRatio = ratioX / ratioY;
+            const tolerance = 0.01;
+
+            if (Math.abs(actualRatio - expectedRatio) > tolerance) {
+              return {
+                targetX: targetX,
+                targetY: targetY,
+                warning: `Provided dimensions don't match the ${ratioX}:${ratioY} ratio. Actual ratio is ${actualRatio.toFixed(
+                  3
+                )}:1`,
+              };
             }
-        };
+          }
 
-        // Ratio Calculator Module
-        const RatioCalculator = {
-            calculate(ratioX, ratioY, targetX, targetY) {
-                if (!ratioX || !ratioY || ratioX <= 0 || ratioY <= 0) {
-                    throw new Error('Please provide valid reference ratio values');
-                }
+          let result = { targetX, targetY };
 
-                const providedValues = [targetX, targetY].filter(v => v && v > 0).length;
-                
-                if (providedValues === 0) {
-                    throw new Error('Please provide at least one target dimension');
-                }
+          if (targetX && !targetY) {
+            result.targetY = (targetX * ratioY) / ratioX;
+          } else if (targetY && !targetX) {
+            result.targetX = (targetY * ratioX) / ratioY;
+          }
 
-                if (providedValues === 2) {
-                    // Check if provided values match the ratio
-                    const actualRatio = targetX / targetY;
-                    const expectedRatio = ratioX / ratioY;
-                    const tolerance = 0.01;
-                    
-                    if (Math.abs(actualRatio - expectedRatio) > tolerance) {
-                        return {
-                            targetX: targetX,
-                            targetY: targetY,
-                            warning: `Provided dimensions don't match the ${ratioX}:${ratioY} ratio. Actual ratio is ${actualRatio.toFixed(3)}:1`
-                        };
-                    }
-                }
+          return result;
+        },
 
-                let result = { targetX, targetY };
+        formatRatio(x, y) {
+          // Simplify the ratio
+          const gcd = this.greatestCommonDivisor(Math.round(x * 100), Math.round(y * 100));
+          const simplifiedX = Math.round(x * 100) / gcd;
+          const simplifiedY = Math.round(y * 100) / gcd;
 
-                if (targetX && !targetY) {
-                    result.targetY = (targetX * ratioY) / ratioX;
-                } else if (targetY && !targetX) {
-                    result.targetX = (targetY * ratioX) / ratioY;
-                }
+          return `${simplifiedX}:${simplifiedY}`;
+        },
 
-                return result;
-            },
+        greatestCommonDivisor(a, b) {
+          return b === 0 ? a : this.greatestCommonDivisor(b, a % b);
+        },
+      };
 
-            formatRatio(x, y) {
-                // Simplify the ratio
-                const gcd = this.greatestCommonDivisor(Math.round(x * 100), Math.round(y * 100));
-                const simplifiedX = Math.round(x * 100) / gcd;
-                const simplifiedY = Math.round(y * 100) / gcd;
-                
-                return `${simplifiedX}:${simplifiedY}`;
-            },
+      // UI Functions - Split into three focused calculation functions
 
-            greatestCommonDivisor(a, b) {
-                return b === 0 ? a : this.greatestCommonDivisor(b, a % b);
-            }
-        };
+      // Function to calculate and update frame dimensions (when image + mat are known)
+      function calculateFrame() {
+        const errorEl = document.getElementById('matError');
+        const dimensionsEl = document.getElementById('matDimensions');
+        const visualEl = document.getElementById('frameVisualization');
 
-        // UI Functions
-        function calculateMat() {
-            const errorEl = document.getElementById('matError');
-            const dimensionsEl = document.getElementById('matDimensions');
-            const visualEl = document.getElementById('frameVisualization');
-            
-            try {
-                errorEl.style.display = 'none';
-                
-                const frameW = parseFloat(document.getElementById('frameWidth').value) || null;
-                const frameH = parseFloat(document.getElementById('frameHeight').value) || null;
-                const imageW = parseFloat(document.getElementById('imageWidth').value) || null;
-                const imageH = parseFloat(document.getElementById('imageHeight').value) || null;
-                const matT = parseFloat(document.getElementById('matTop').value) || null;
-                const matB = parseFloat(document.getElementById('matBottom').value) || null;
-                const matL = parseFloat(document.getElementById('matLeft').value) || null;
-                const matR = parseFloat(document.getElementById('matRight').value) || null;
+        try {
+          errorEl.style.display = 'none';
 
-                const result = MatCalculator.calculate(frameW, frameH, imageW, imageH, matT, matB, matL, matR);
-                
-                // Update input fields with calculated values
-                if (result.frameWidth) document.getElementById('frameWidth').value = result.frameWidth.toFixed(2);
-                if (result.frameHeight) document.getElementById('frameHeight').value = result.frameHeight.toFixed(2);
-                if (result.imageWidth) document.getElementById('imageWidth').value = result.imageWidth.toFixed(2);
-                if (result.imageHeight) document.getElementById('imageHeight').value = result.imageHeight.toFixed(2);
-                if (result.matTop) document.getElementById('matTop').value = result.matTop.toFixed(2);
-                if (result.matBottom) document.getElementById('matBottom').value = result.matBottom.toFixed(2);
-                if (result.matLeft) document.getElementById('matLeft').value = result.matLeft.toFixed(2);
-                if (result.matRight) document.getElementById('matRight').value = result.matRight.toFixed(2);
+          const frameW = null; // We're calculating frame
+          const frameH = null; // We're calculating frame
+          const imageW = parseFloat(document.getElementById('imageWidth').value) || null;
+          const imageH = parseFloat(document.getElementById('imageHeight').value) || null;
+          const matT = parseFloat(document.getElementById('matTop').value) || null;
+          const matB = parseFloat(document.getElementById('matBottom').value) || null;
+          const matL = parseFloat(document.getElementById('matLeft').value) || null;
+          const matR = parseFloat(document.getElementById('matRight').value) || null;
 
-                // Update dimensions display
-                document.getElementById('calcFrameDims').textContent = 
-                    `${result.frameWidth?.toFixed(2)}" × ${result.frameHeight?.toFixed(2)}"`;
-                document.getElementById('calcImageDims').textContent = 
-                    `${result.imageWidth?.toFixed(2)}" × ${result.imageHeight?.toFixed(2)}"`;
-                document.getElementById('calcMatDims').textContent = 
-                    `T:${result.matTop?.toFixed(2)}" R:${result.matRight?.toFixed(2)}" B:${result.matBottom?.toFixed(2)}" L:${result.matLeft?.toFixed(2)}"`;
+          if (!imageW || !imageH || !matT || !matB || !matL || !matR) {
+            throw new Error('Need image dimensions and all mat borders to calculate frame');
+          }
 
-                // Generate and display visual
-                visualEl.innerHTML = MatCalculator.generateVisual(
-                    result.frameWidth, result.frameHeight,
-                    result.imageWidth, result.imageHeight,
-                    result.matTop, result.matBottom,
-                    result.matLeft, result.matRight
-                );
+          const result = {
+            frameWidth: imageW + matL + matR,
+            frameHeight: imageH + matT + matB,
+            imageWidth: imageW,
+            imageHeight: imageH,
+            matTop: matT,
+            matBottom: matB,
+            matLeft: matL,
+            matRight: matR,
+          };
 
-                dimensionsEl.style.display = 'block';
-            } catch (error) {
-                errorEl.textContent = error.message;
-                errorEl.style.display = 'block';
-                dimensionsEl.style.display = 'none';
-                visualEl.innerHTML = '<div style="color: #666; font-style: italic;">Fix errors to see visualization</div>';
-            }
+          // Update frame input fields and highlight changes
+          document.getElementById('frameWidth').value = result.frameWidth.toFixed(2);
+          document.getElementById('frameHeight').value = result.frameHeight.toFixed(2);
+          highlightChangedInput('frameWidth');
+          highlightChangedInput('frameHeight');
+
+          updateFrameVisualization(result);
+          dimensionsEl.style.display = 'block';
+        } catch (error) {
+          errorEl.textContent = error.message;
+          errorEl.style.display = 'block';
+          dimensionsEl.style.display = 'none';
+          visualEl.innerHTML = '<div style="color: #666; font-style: italic;">Fix errors to see visualization</div>';
         }
+      }
 
-        function calculateRatio() {
-            const errorEl = document.getElementById('ratioError');
-            const resultEl = document.getElementById('ratioResult');
-            const textEl = document.getElementById('ratioText');
-            
-            try {
-                errorEl.style.display = 'none';
-                
-                const ratioX = parseFloat(document.getElementById('ratioX').value);
-                const ratioY = parseFloat(document.getElementById('ratioY').value);
-                const targetX = parseFloat(document.getElementById('targetX').value) || null;
-                const targetY = parseFloat(document.getElementById('targetY').value) || null;
+      // Function to calculate and update image dimensions (when frame + mat are known)
+      function calculateImage() {
+        const errorEl = document.getElementById('matError');
+        const dimensionsEl = document.getElementById('matDimensions');
+        const visualEl = document.getElementById('frameVisualization');
 
-                const result = RatioCalculator.calculate(ratioX, ratioY, targetX, targetY);
-                
-                // Update input fields only if they don't currently have focus (to avoid interfering with typing)
-                const activeElement = document.activeElement;
-                if (result.targetX && activeElement.id !== 'targetX') {
-                    document.getElementById('targetX').value = result.targetX.toFixed(0);
-                }
-                if (result.targetY && activeElement.id !== 'targetY') {
-                    document.getElementById('targetY').value = result.targetY.toFixed(0);
-                }
+        try {
+          errorEl.style.display = 'none';
 
-                // Display result
-                let resultText = `${result.targetX?.toFixed(0)} × ${result.targetY?.toFixed(0)}`;
-                if (result.warning) {
-                    resultText += `<br><small style="color: #ffeb3b;">${result.warning}</small>`;
-                } else {
-                    const simplifiedRatio = RatioCalculator.formatRatio(ratioX, ratioY);
-                    resultText += `<br><small>Ratio: ${simplifiedRatio}</small>`;
-                }
-                
-                textEl.innerHTML = resultText;
-                resultEl.style.display = 'block';
-            } catch (error) {
-                errorEl.textContent = error.message;
-                errorEl.style.display = 'block';
-                resultEl.style.display = 'none';
-            }
+          const frameW = parseFloat(document.getElementById('frameWidth').value) || null;
+          const frameH = parseFloat(document.getElementById('frameHeight').value) || null;
+          const imageW = null; // We're calculating image
+          const imageH = null; // We're calculating image
+          const matT = parseFloat(document.getElementById('matTop').value) || null;
+          const matB = parseFloat(document.getElementById('matBottom').value) || null;
+          const matL = parseFloat(document.getElementById('matLeft').value) || null;
+          const matR = parseFloat(document.getElementById('matRight').value) || null;
+
+          if (!frameW || !frameH || !matT || !matB || !matL || !matR) {
+            throw new Error('Need frame dimensions and all mat borders to calculate image size');
+          }
+
+          const newImageW = frameW - matL - matR;
+          const newImageH = frameH - matT - matB;
+
+          if (newImageW <= 0 || newImageH <= 0) {
+            throw new Error('Mat borders are too large for the frame');
+          }
+
+          const result = {
+            frameWidth: frameW,
+            frameHeight: frameH,
+            imageWidth: newImageW,
+            imageHeight: newImageH,
+            matTop: matT,
+            matBottom: matB,
+            matLeft: matL,
+            matRight: matR,
+          };
+
+          // Update image input fields and highlight changes
+          document.getElementById('imageWidth').value = result.imageWidth.toFixed(2);
+          document.getElementById('imageHeight').value = result.imageHeight.toFixed(2);
+          highlightChangedInput('imageWidth');
+          highlightChangedInput('imageHeight');
+
+          updateFrameVisualization(result);
+          dimensionsEl.style.display = 'block';
+        } catch (error) {
+          errorEl.textContent = error.message;
+          errorEl.style.display = 'block';
+          dimensionsEl.style.display = 'none';
+          visualEl.innerHTML = '<div style="color: #666; font-style: italic;">Fix errors to see visualization</div>';
         }
+      }
 
-        // Auto-calculate on input change
-        document.addEventListener('DOMContentLoaded', function() {
-            const matInputs = ['frameWidth', 'frameHeight', 'imageWidth', 'imageHeight', 'matTop', 'matBottom', 'matLeft', 'matRight'];
-            const ratioInputs = ['ratioX', 'ratioY', 'targetX', 'targetY'];
+      // Function to calculate and update mat dimensions (when frame + image are known)
+      function calculateMat() {
+        const errorEl = document.getElementById('matError');
+        const dimensionsEl = document.getElementById('matDimensions');
+        const visualEl = document.getElementById('frameVisualization');
 
-            matInputs.forEach(id => {
-                document.getElementById(id).addEventListener('input', function() {
-                    // Auto-calculate if we have enough inputs
-                    setTimeout(calculateMat, 300);
-                });
-            });
+        try {
+          errorEl.style.display = 'none';
 
-            ratioInputs.forEach(id => {
-                document.getElementById(id).addEventListener('input', function() {
-                    // Auto-calculate if we have enough inputs
-                    setTimeout(calculateRatio, 300);
-                });
-            });
+          const frameW = parseFloat(document.getElementById('frameWidth').value) || null;
+          const frameH = parseFloat(document.getElementById('frameHeight').value) || null;
+          const imageW = parseFloat(document.getElementById('imageWidth').value) || null;
+          const imageH = parseFloat(document.getElementById('imageHeight').value) || null;
+          const matT = parseFloat(document.getElementById('matTop').value) || null;
+          const matB = parseFloat(document.getElementById('matBottom').value) || null;
+          const matL = parseFloat(document.getElementById('matLeft').value) || null;
+          const matR = parseFloat(document.getElementById('matRight').value) || null;
 
-            // Trigger initial calculation if we have enough default values
-            setTimeout(function() {
-                // Check if we have enough values for mat calculation
-                const frameW = parseFloat(document.getElementById('frameWidth').value) || null;
-                const frameH = parseFloat(document.getElementById('frameHeight').value) || null;
-                const imageW = parseFloat(document.getElementById('imageWidth').value) || null;
-                const imageH = parseFloat(document.getElementById('imageHeight').value) || null;
+          if (!frameW || !frameH || !imageW || !imageH) {
+            throw new Error('Need frame and image dimensions to calculate mat borders');
+          }
 
-                if (frameW && frameH && imageW && imageH) {
-                    calculateMat();
-                }
-            }, 100);
+          const totalHorizontalMat = frameW - imageW;
+          const totalVerticalMat = frameH - imageH;
+
+          if (totalHorizontalMat < 0 || totalVerticalMat < 0) {
+            throw new Error('Image is larger than frame interior');
+          }
+
+          const result = {
+            frameWidth: frameW,
+            frameHeight: frameH,
+            imageWidth: imageW,
+            imageHeight: imageH,
+            matTop: totalVerticalMat / 2,
+            matBottom: totalVerticalMat / 2,
+            matLeft: totalHorizontalMat / 2,
+            matRight: totalHorizontalMat / 2,
+          };
+
+          // Update mat input fields and highlight changes
+          document.getElementById('matTop').value = result.matTop.toFixed(2);
+          document.getElementById('matBottom').value = result.matBottom.toFixed(2);
+          document.getElementById('matLeft').value = result.matLeft.toFixed(2);
+          document.getElementById('matRight').value = result.matRight.toFixed(2);
+
+          highlightChangedInput('matTop');
+          highlightChangedInput('matBottom');
+          highlightChangedInput('matLeft');
+          highlightChangedInput('matRight');
+
+          updateFrameVisualization(result);
+          dimensionsEl.style.display = 'block';
+        } catch (error) {
+          errorEl.textContent = error.message;
+          errorEl.style.display = 'block';
+          dimensionsEl.style.display = 'none';
+          visualEl.innerHTML = '<div style="color: #666; font-style: italic;">Fix errors to see visualization</div>';
+        }
+      }
+
+      function updateFrameVisualization(result) {
+        const visualEl = document.getElementById('frameVisualization');
+
+        // Update dimensions display
+        document.getElementById('calcFrameDims').textContent = `${result.frameWidth?.toFixed(
+          2
+        )}" × ${result.frameHeight?.toFixed(2)}"`;
+        document.getElementById('calcImageDims').textContent = `${result.imageWidth?.toFixed(
+          2
+        )}" × ${result.imageHeight?.toFixed(2)}"`;
+        document.getElementById('calcMatDims').textContent = `T:${result.matTop?.toFixed(
+          2
+        )}" R:${result.matRight?.toFixed(2)}" B:${result.matBottom?.toFixed(2)}" L:${result.matLeft?.toFixed(2)}"`;
+
+        // Generate and display visual
+        visualEl.innerHTML = MatCalculator.generateVisual(
+          result.frameWidth,
+          result.frameHeight,
+          result.imageWidth,
+          result.imageHeight,
+          result.matTop,
+          result.matBottom,
+          result.matLeft,
+          result.matRight
+        );
+      }
+
+      function calculateRatio() {
+        const errorEl = document.getElementById('ratioError');
+        const resultEl = document.getElementById('ratioResult');
+        const textEl = document.getElementById('ratioText');
+
+        try {
+          errorEl.style.display = 'none';
+
+          const ratioX = parseFloat(document.getElementById('ratioX').value);
+          const ratioY = parseFloat(document.getElementById('ratioY').value);
+          const targetX = parseFloat(document.getElementById('targetX').value) || null;
+          const targetY = parseFloat(document.getElementById('targetY').value) || null;
+
+          const result = RatioCalculator.calculate(ratioX, ratioY, targetX, targetY);
+
+          // Update input fields only if they don't currently have focus (to avoid interfering with typing)
+          const activeElement = document.activeElement;
+          if (result.targetX && activeElement.id !== 'targetX') {
+            const targetXInput = document.getElementById('targetX');
+            const currentValue = parseFloat(targetXInput.value) || 0;
+            const newValue = Math.round(result.targetX);
+
+            if (currentValue !== newValue) {
+              targetXInput.value = newValue;
+              highlightChangedInput('targetX');
+            }
+          }
+          if (result.targetY && activeElement.id !== 'targetY') {
+            const targetYInput = document.getElementById('targetY');
+            const currentValue = parseFloat(targetYInput.value) || 0;
+            const newValue = Math.round(result.targetY);
+
+            if (currentValue !== newValue) {
+              targetYInput.value = newValue;
+              highlightChangedInput('targetY');
+            }
+          }
+
+          // Display result
+          let resultText = `${result.targetX?.toFixed(0)} × ${result.targetY?.toFixed(0)}`;
+          if (result.warning) {
+            resultText += `<br><small style="color: #ffeb3b;">${result.warning}</small>`;
+          } else {
+            const simplifiedRatio = RatioCalculator.formatRatio(ratioX, ratioY);
+            resultText += `<br><small>Ratio: ${simplifiedRatio}</small>`;
+          }
+
+          textEl.innerHTML = resultText;
+          resultEl.style.display = 'block';
+        } catch (error) {
+          errorEl.textContent = error.message;
+          errorEl.style.display = 'block';
+          resultEl.style.display = 'none';
+        }
+      }
+
+      // Function to highlight an input field that was automatically changed
+      function highlightChangedInput(inputId) {
+        const input = document.getElementById(inputId);
+        input.classList.add('input-changed');
+
+        // Remove the highlight after 2 seconds
+        setTimeout(() => {
+          input.classList.remove('input-changed');
+        }, 2000);
+      }
+
+      // Auto-calculate on input change
+      document.addEventListener('DOMContentLoaded', function () {
+        const frameInputs = ['frameWidth', 'frameHeight'];
+        const imageInputs = ['imageWidth', 'imageHeight'];
+        const matBorderInputs = ['matTop', 'matBottom', 'matLeft', 'matRight'];
+        const ratioInputs = ['ratioX', 'ratioY', 'targetX', 'targetY'];
+
+        // When frame changes, update mat borders (keeping image size constant)
+        frameInputs.forEach((id) => {
+          document.getElementById(id).addEventListener('input', function () {
+            setTimeout(() => {
+              calculateMat();
+            }, 300);
+          });
         });
+
+        // When image changes, update mat borders (keeping frame size constant)
+        imageInputs.forEach((id) => {
+          document.getElementById(id).addEventListener('input', function () {
+            setTimeout(() => {
+              calculateMat();
+            }, 300);
+          });
+        });
+
+        // When mat borders change, update image size (keeping frame size constant)
+        matBorderInputs.forEach((id) => {
+          document.getElementById(id).addEventListener('input', function () {
+            setTimeout(calculateImage, 300);
+          });
+        });
+
+        ratioInputs.forEach((id) => {
+          document.getElementById(id).addEventListener('input', function () {
+            // Auto-calculate if we have enough inputs
+            setTimeout(calculateRatio, 300);
+          });
+        });
+
+        // Trigger initial calculation if we have enough default values
+        setTimeout(function () {
+          // Check if we have enough values for mat calculation
+          const frameW = parseFloat(document.getElementById('frameWidth').value) || null;
+          const frameH = parseFloat(document.getElementById('frameHeight').value) || null;
+          const imageW = parseFloat(document.getElementById('imageWidth').value) || null;
+          const imageH = parseFloat(document.getElementById('imageHeight').value) || null;
+
+          if (frameW && frameH && imageW && imageH) {
+            calculateMat();
+          }
+        }, 100);
+      });
     </script>
-</body>
+  </body>
 </html>
