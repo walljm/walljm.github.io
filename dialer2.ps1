@@ -142,21 +142,24 @@ function Invoke-TeamsCall {
     [System.Windows.Automation.ControlType]::Button)
   $condition = New-Object System.Windows.Automation.AndCondition($typeCondition, $nameCondition)
 
-  $button = $null
   while ((Get-Date) -lt $deadline) {
     $button = $root.FindFirst(
       [System.Windows.Automation.TreeScope]::Descendants,
       $condition)
-    if ($null -ne $button) { break }
+    if ($null -ne $button) {
+      try {
+        $invokePattern = $button.GetCurrentPattern(
+          [System.Windows.Automation.InvokePattern]::Pattern)
+        $invokePattern.Invoke()
+        return $true
+      } catch {
+        # Stale element from a previous call's dialog — keep searching
+      }
+    }
     Start-Sleep -Milliseconds 250
   }
 
-  if ($null -eq $button) { return $false }
-
-  $invokePattern = $button.GetCurrentPattern(
-    [System.Windows.Automation.InvokePattern]::Pattern)
-  $invokePattern.Invoke()
-  return $true
+  return $false
 }
 
 # Dump UIA candidates for the Start Call button. Used when auto-click fails.
