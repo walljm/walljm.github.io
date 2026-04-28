@@ -48,12 +48,15 @@ using System;
 using System.Runtime.InteropServices;
 public class WinApi {
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("user32.dll")] public static extern bool AllowSetForegroundWindow(int dwProcessId);
     [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
 }
 '@
 
 function Set-ConsoleFocus {
   [void][WinApi]::SetForegroundWindow([WinApi]::GetConsoleWindow())
+  # Release the foreground lock so Teams can take focus when the next deep link fires
+  [void][WinApi]::AllowSetForegroundWindow(-1)
 }
 
 # --- Parse the list ---------------------------------------------------------
@@ -121,7 +124,6 @@ function Invoke-TeamsCall {
   $encoded = [uri]::EscapeDataString($E164Number)
   $url = "msteams:/l/call/0/0?users=4:$encoded"
   Start-Process $url
-  Start-Sleep -Milliseconds 1500  # give Teams time to render the confirmation dialog
 
   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
   $root = [System.Windows.Automation.AutomationElement]::RootElement
