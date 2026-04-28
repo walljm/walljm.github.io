@@ -121,7 +121,7 @@ if ($null -eq $button) {
         $_.Current.AutomationId
     } | Write-Host
   } else {
-    Write-Host "(none found — the dialog may not be open, or Name is empty/different)"
+    Write-Host "(none found - the dialog may not be open, or Name is empty/different)"
   }
   Write-Host ""
 
@@ -140,7 +140,7 @@ if ($null -eq $button) {
       Write-Host "... and $($buttons.Count - 50) more"
     }
   } else {
-    Write-Host "(no Button elements found at all — UIA may be blocked in this VDI)"
+    Write-Host "(no Button elements found at all - UIA may be blocked in this VDI)"
   }
   Write-Host ""
 
