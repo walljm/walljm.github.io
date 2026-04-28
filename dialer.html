@@ -156,10 +156,22 @@
         });
     }
 
+    // Normalize to E.164. US-default: bare 10-digit numbers get +1 prepended,
+    // and 11-digit numbers starting with 1 get a + prepended. Numbers with an
+    // explicit leading + are kept as-is (validated 8-15 digits per ITU E.164).
+    // Returns null for anything that doesn't fit.
     function normalizeNumber(raw) {
-      // Strip to digits and leading +
-      const cleaned = raw.replace(/[^\d+]/g, '');
-      return cleaned;
+      if (!raw) return null;
+      const trimmed = raw.trim();
+      const hasPlus = trimmed.startsWith('+');
+      const digits = trimmed.replace(/\D/g, '');
+      if (hasPlus) {
+        if (digits.length < 8 || digits.length > 15) return null;
+        return '+' + digits;
+      }
+      if (digits.length === 10) return '+1' + digits;
+      if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
+      return null;
     }
 
     function renderList() {
@@ -168,8 +180,19 @@
       entries.forEach((entry, i) => {
         const li = document.createElement('li');
         li.className = i === currentIndex ? 'current' : entry.status;
-        li.innerHTML = `<span class="status-icon"></span><span>${entry.number}</span>` +
-          (entry.name ? `<span class="name">${entry.name}</span>` : '');
+
+        const icon = document.createElement('span');
+        icon.className = 'status-icon';
+        const num = document.createElement('span');
+        num.textContent = entry.number;
+        li.appendChild(icon);
+        li.appendChild(num);
+        if (entry.name) {
+          const name = document.createElement('span');
+          name.className = 'name';
+          name.textContent = entry.name;
+          li.appendChild(name);
+        }
         list.appendChild(li);
       });
     }
@@ -188,7 +211,7 @@
         $('instruction').innerHTML = 'Press <kbd>Space</kbd> to dial';
         $('dialBtn').disabled = false;
       } else if (dialState === State.WAITING) {
-        $('instruction').innerHTML = 'Call in progress — press <kbd>Space</kbd> when done to dial next, or <kbd>S</kbd> to skip next';
+        $('instruction').innerHTML = 'Call in progress — press <kbd>Space</kbd> when done to advance';
         $('dialBtn').disabled = true;
       }
     }
@@ -204,10 +227,19 @@
 
     function dialCurrent() {
       if (currentIndex < 0 || currentIndex >= entries.length) return;
-      const num = normalizeNumber(entries[currentIndex].number);
+      const entry = entries[currentIndex];
+      const num = normalizeNumber(entry.number);
+      if (!num) {
+        $('instruction').textContent =
+          'Invalid number — must be E.164 format (e.g. +15551234567). Skipping.';
+        entry.status = 'skipped';
+        renderList();
+        setTimeout(advance, 1200);
+        return;
+      }
       const url = `msteams:/l/call/0/0?users=4:${encodeURIComponent(num)}`;
       launchTeams(url);
-      entries[currentIndex].status = 'done';
+      entry.status = 'done';
       dialState = State.WAITING;
       updateStatus();
       renderList();
@@ -236,37 +268,44 @@
       advance();
     }
 
-    // Preflight test
+    // Preflight test — opens the Teams app via its bare protocol URL. This is the
+    // most reliable probe: no target, no malformed deep link, just "launch Teams".
     $('testBtn').addEventListener('click', () => {
-      const testUrl = 'msteams:/l/chat/0/0';
-      launchTeams(testUrl);
+      launchTeams('msteams://');
       const indicator = $('preflightIndicator');
       const msg = $('preflightMsg');
 
-      // We can't truly detect if Teams handled it, so ask the user
+      // We can't truly detect if Teams handled it, so ask the user.
       indicator.className = 'indicator unknown';
-      msg.innerHTML = 'A Teams window should have opened. <strong>Did Teams open?</strong> ' +
-        '<a href="#" id="preflightYes" style="color:#2ecc71">Yes</a> · ' +
-        '<a href="#" id="preflightNo" style="color:#e74c3c">No</a>';
+      msg.textContent = '';
 
-      setTimeout(() => {
-        const yesLink = $('preflightYes');
-        const noLink = $('preflightNo');
-        if (yesLink) {
-          yesLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            indicator.className = 'indicator pass';
-            msg.textContent = 'Teams is working. You\'re good to go!';
-          });
-        }
-        if (noLink) {
-          noLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            indicator.className = 'indicator fail';
-            msg.innerHTML = 'Teams didn\'t open. Make sure the Teams desktop app is installed and that your browser is allowed to open <code>msteams:</code> links (you may need to approve a browser prompt the first time).';
-          });
-        }
-      }, 0);
+      const prompt = document.createElement('span');
+      prompt.textContent = 'Teams should have opened (or focused). Did it? ';
+      const yesLink = document.createElement('a');
+      yesLink.href = '#';
+      yesLink.textContent = 'Yes';
+      yesLink.style.color = '#2ecc71';
+      const sep = document.createTextNode(' · ');
+      const noLink = document.createElement('a');
+      noLink.href = '#';
+      noLink.textContent = 'No';
+      noLink.style.color = '#e74c3c';
+      msg.appendChild(prompt);
+      msg.appendChild(yesLink);
+      msg.appendChild(sep);
+      msg.appendChild(noLink);
+
+      yesLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        indicator.className = 'indicator pass';
+        msg.textContent = 'Teams is working. You\'re good to go!';
+      });
+      noLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        indicator.className = 'indicator fail';
+        msg.textContent =
+          'Teams didn\'t open. Make sure the Teams desktop app is installed and that your browser is allowed to open msteams: links (you may need to approve a browser prompt the first time).';
+      });
     });
 
     // Start
@@ -284,15 +323,20 @@
     });
 
     $('skipBtn').addEventListener('click', () => {
-      if (dialState === State.READY) {
-        skipCurrent();
-      } else if (dialState === State.WAITING) {
-        advance();
-      }
+      if (dialState === State.READY) skipCurrent();
     });
 
     $('stopBtn').addEventListener('click', () => {
+      entries = [];
+      currentIndex = -1;
+      dialState = State.IDLE;
+      $('callList').innerHTML = '';
+      $('currentNumber').textContent = '—';
+      $('currentName').textContent = '';
+      $('progress').textContent = '';
+      $('instruction').textContent = '';
       $('dialingArea').classList.add('hidden');
+      $('idleArea').classList.add('hidden');
       $('inputArea').classList.remove('hidden');
     });
 
