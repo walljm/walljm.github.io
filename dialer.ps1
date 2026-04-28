@@ -42,6 +42,20 @@ if (-not (Test-Path $listFile)) {
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
 
+# --- Win32 helper to refocus the console window after Teams steals focus ----
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public class WinApi {
+    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
+}
+'@
+
+function Set-ConsoleFocus {
+  [void][WinApi]::SetForegroundWindow([WinApi]::GetConsoleWindow())
+}
+
 # --- Parse the list ---------------------------------------------------------
 $entries = @()
 Get-Content $listFile | ForEach-Object {
@@ -107,6 +121,7 @@ function Invoke-TeamsCall {
   $encoded = [uri]::EscapeDataString($E164Number)
   $url = "msteams:/l/call/0/0?users=4:$encoded"
   Start-Process $url
+  Start-Sleep -Milliseconds 1500  # give Teams time to render the confirmation dialog
 
   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
   $root = [System.Windows.Automation.AutomationElement]::RootElement
@@ -213,6 +228,7 @@ Write-Host ""
 $called = 0
 $failed = 0
 
+try {
 for ($i = 0; $i -lt $entries.Count; $i++) {
   $entry = $entries[$i]
   $normalized = ConvertTo-E164 -Raw $entry.Number
@@ -245,7 +261,15 @@ for ($i = 0; $i -lt $entries.Count; $i++) {
     $failed++
     Show-Diagnostics
   }
+  Set-ConsoleFocus
 }
 
 Write-Host ""
 Write-Host ("Done. Called: {0}  Failed: {1}  Total: {2}" -f $called, $failed, $entries.Count) -ForegroundColor Green
+} catch {
+  Write-Host ""
+  Write-Host "FATAL ERROR: $_" -ForegroundColor Red
+  Write-Host $_.ScriptStackTrace -ForegroundColor DarkRed
+}
+
+Read-Host "`nPress Enter to close"
